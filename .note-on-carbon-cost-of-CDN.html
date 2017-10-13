@@ -1,0 +1,728 @@
+<h1>On CDNs, HTTP/2 and HTTPS: Performance and Carbon Footprint</h1>
+<div class="pgdescription">Carbon cutting with HTTP/2 and Content Delivery Networks to improve user experience?</div>
+<!-- EXTCSS img/css/fullw-20170606.css img/css/table-20170622.css -->
+<!-- meta itemprop="datePublished" content="2017-05-11" -->
+<!-- SQTN img/cloud-dbg-256x256.png -->
+
+<!--DESK--><img src="//STATIC.earth.org.uk/img/cloud-dbg-256x256.png" class=respfloatr width=256 height=256 title="dark cloud" alt="dark cloud"/>
+
+
+<aside><div class="sidebar">See also:<nav><ul>
+<li><a href="note-on-Raspberry-Pi-2-setup.html">A Note On Setting Up the Raspberry Pi 2 as Server/Hub</a></li>
+<li><a href="SPAM-and-CO2.html">SPAM's Carbon Footprint</a></li>
+<li><a href="low-power-software.html">Low-Power Software</a></li>
+<li><a href="note-on-site-technicals.html">A Note On Site Technicals</a></li>
+</ul></nav></div></aside>
+
+
+<p>
+2017/05/11: I am trying to understand if moving some of my
+(lightly loaded and fairly static) Web sites into the cloud c/o CDNs
+can improve perceived performance, with use of features
+such as HTTP/2, and whether I'm likely to be making a difference to my
+total carbon impact in the process.
+</p>
+
+<p>
+Ideally, I can make users happy with faster sites,
+and also reduce my carbon footprint through improved efficiency.
+</p>
+
+<p>
+I'm nowhere near any bandwidth or capacity limits,
+nor have any of my sites been attacked (more than the usual background),
+so this is in the spirit of scientific enquiry!
+</p>
+
+<p>
+Most of my views are single page (eg via search) and from the same country
+(UK), thus low latency/RTT (Round-Trip Time between the user and my servers).
+</p>
+
+
+<h2>First View, Empty Cache</h2>
+
+<p>
+Improving user experience is therefore quite a lot about reducing the
+"first page view" page load time of a new user with an empty cache.
+</p>
+
+<p>
+Speedup may also help search engine optimisation (yes, the deaded SEO)
+ie help my pages to be spidered and returned in search results!
+</p>
+
+<p>
+(My general approach remains to cache like it was going out of fashion,
+but optimise for the first hit and assume near 100% bounce rate anyway!)
+</p>
+
+<p>
+Google's <a href="https://developers.google.com/speed/docs/insights/mobile">Mobile Analysis in PageSpeed Insights</a> suggests that above-the-fold (ATF) content should render in no more than 1s.
+</p>
+
+<p>
+Though new and shiny and fashionable, the pros and cons of HTTP/2
+seem quite subtle for smaller sites for example, with findings such as:
+</p>
+<ul>
+<li><a href="https://alistapart.com/article/using-http-2-responsibly-adapting-for-users">If your site’s footprint is very small, HTTP requests are few, and upgrading to SSL isn’t pragmatic, you may already be well-served by HTTP/1</a>.</li>
+<li><a href="http://ieeexplore.ieee.org/document/7476672/"> ... for networks with higher RTTs, HTTP/2 has better energy consumption performance than HTTP/1.1</a> [<a href="http://scholar.google.co.uk/scholar_url?url=http://softwareprocess.es/pubs/chowdhury2016SANER-http2.pdf&hl=en&sa=X&scisig=AAGBfm2u6039_ST1gZalHEx6rbT0EX4V8A&nossl=1&oi=scholarr&ved=0ahUKEwiU3NXO65PUAhUIAsAKHfP5BfsQgAMIJygAMAA">PDF</a>].</li>
+<li><a href="https://peerj.com/preprints/2027.pdf">Web Servers Energy Efficiency Under HTTP/2: Varun Sapra and Abram Hindle [PDF]</a>: "We conclude that even with huge TLS associated cost with HTTP/2, on high latency networks it can help servers to be more energy efficient while improving their performance as well."</li>
+</ul>
+
+<p>
+<em>It seems that for lightweight sites near their end users (eg all
+within one country) neither CDNs nor HTTP/2 seem likely to help with
+either speed or bandwidth (nor likely cost, energy and thus carbon)</em>:
+see below.
+</p>
+
+<p>
+Note that there are some things that can be done which are pretty
+much always a win for performance and carbon, such as lossless
+reduction of HTML/JavaScript/CSS (minifying) and images, though
+sometimes there is a conflict with maintainability of the site.
+</p>
+
+
+<h2>Target</h2>
+
+<p>
+First, I want to measure if HTTP/2 helps perceived site performance
+at all given the nature of the site and users, and inspite of any
+https/TLS costs, simply because of better use of TCP (eg, a single
+connection).  Time to first render, and time to be 'visually complete'
+of essential content above the fold, are probably good candidate
+metrics.
+</p>
+
+<p>
+Second, I want to estimate nominal carbon cost or savings
+from offloading some load into highly-tuned CDN engines in the
+cloud.  This could include reduced travel distance for traffic,
+reduced numbers of connections or packets or bytes sent might all
+be a reasonable start.
+</p>
+
+
+<h2>Fossil Site</h2>
+
+<p>
+For this test I have ab/used a 'fossil' site that I use for one
+very narrow purpose (remembering which agents I have used for
+contracting in London and sharing that list with others).
+</p>
+
+<p>
+It is basically a single relatively small HTML (~10kB) page with
+three small decorative images, being served from my Raspberry Pi 2
+with Apache 2.2 over HTTP/1.1 unencrypted over a nice fat (~10Mbps
+outbound) FTTC (Fibre To The Cabinet) Internet link.
+</p>
+
+<p>
+Traffic is tiny, and most of it is bots of some sort!
+</p>
+
+<p>
+Typical human users are from the UK (the domain is .co.uk).
+</p>
+
+<p>
+When I use the magnificent <a href="http://www.webpagetest.org/">WebPagetest</a>
+to fetch a broadly similar page from the same server (this page
+in fact, while being written) to a UK location to a desktop over
+'DSL' (London, UK - EC2 - Chrome - DSL; 1.5Mbps/384kbps 50ms RTT),
+fetching twice to a fresh browser cache to simulate a typical first
+visit from a new user but with any intermediate hardware warmed up,
+<a href="http://www.webpagetest.org/result/170512_RE_DAD/">I get</a>
+for run 2:
+</p>
+
+<div class="fullwcdisp" style="font-size:smaller">
+<table class="tb1" style="margin-left:auto;margin-right:auto">
+<tr>
+<th colspan="6" style="text-align:center;vertical-align:middle"></th>
+<th colspan="3" style="text-align:center;vertical-align:middle">Document Complete</th>
+<th colspan="4" style="text-align:center;vertical-align:middle">Fully Loaded</th>
+</tr>
+<tr><th style="text-align:center;vertical-align:middle"></th>
+<th style="text-align:center;vertical-align:middle">Load Time</th>
+<th style="text-align:center;vertical-align:middle">First Byte</th>
+<th style="text-align:center;vertical-align:middle">Start Render</th>
+<th style="text-align:center;vertical-align:middle"><a href="https://sites.google.com/a/webpagetest.org/docs/using-webpagetest/metrics/speed-index" target="_blank">Speed Index</a></th>
+<th style="text-align:center;vertical-align:middle"><a href="https://github.com/WPO-Foundation/webpagetest/blob/master/docs/Metrics/TimeToInteractive.md">Interactive (beta)</a></th>
+<th style="text-align:center;vertical-align:middle">Time</th>
+<th style="text-align:center;vertical-align:middle">Requests</th>
+<th style="text-align:center;vertical-align:middle">Bytes In</th>
+<th style="text-align:center;vertical-align:middle">Time</th>
+<th style="text-align:center;vertical-align:middle">Requests</th>
+<th style="text-align:center;vertical-align:middle">Bytes In</th>
+<th style="text-align:center;vertical-align:middle">Cost</th>
+<tr>
+<td style="vertical-align:middle">First View (Run 2)</td>
+<td style="vertical-align:middle">0.417s</td>
+<td style="vertical-align:middle">0.247s</td>
+<td style="vertical-align:middle">0.386s</td>
+<td style="vertical-align:middle">580</td>
+<td style="vertical-align:middle">&GT; 2.943s</td>
+<td style="vertical-align:middle">0.417s</td>
+<td style="vertical-align:middle">3</td>
+<td style="vertical-align:middle">7 KB</td>
+<td style="vertical-align:middle">0.532s</td>
+<td style="vertical-align:middle">5</td>
+<td style="vertical-align:middle">11 KB</td>
+<td style="vertical-align:middle"><a title="Find out how much it costs for someone
+to use your site on mobile networks around the world."
+href="http://whatdoesmysitecost.com/test/170512_RE_DAD">$----</a></td>
+</tr>
+</table>
+</div>
+
+<p>
+That's lots of 'A' scores and the following initial (HTML) connection details:
+</p>
+<ul>
+<li>DNS Lookup: 60 ms</li>
+<li>Initial Connection: 70 ms</li>
+<li>Time to First Byte: 116 ms</li>
+<li>Content Download: 15 ms</li>
+<li>Bytes In (downloaded): 3.7 KB</li>
+<li>Uncompressed Size: 7.6 KB</li>
+<li>Bytes Out (uploaded): 0.4 KB</li>
+</ul>
+<p>
+That is a time to first byte of ~100ms and from above a visually complete
+document in well under a second, which is all very good!
+</p>
+
+<p>
+A couple of (HTTP/1.1) connections are opened, the second speculatively
+by the browser, the first transferring 3 objects and the second used for 2.
+</p>
+
+<div class="fullwcdisp">
+<img src="//STATIC.earth.org.uk/img/20170512-waterfall-non-CDN.png" class="resp" width="930" height="261" title="connection chart c/o WebPagetest" alt="connection chart c/o WebPagetest" />
+</div>
+
+<p>
+So this is a case where HTTP/1.1 is performing quite well.
+</p>
+
+<p>
+The (fossil, and this peer) site content is entirely benign so there
+isn't a very strong case for encryption, and given the very low traffic
+any effort spent on managing https is arguably wasted.  Opinions vary.
+</p>
+
+
+<h2>Testing HTTP/2 Easily: Cloudflare</h2>
+
+<p>
+To test HTTP/2 with mainline browsers requires a secure connection
+<a href="https://http2.github.io/faq/#does-http2-require-encryption">in practice</a>
+because there are a lot of broken HTTP/1.x proxies out there.  My
+current RPi2 installation is such that I'd have to reinstall the
+OS from scratch to get the Apache 2.4 and OpenSSL and other support
+needed: <code>apt-get dist-upgrade</code> is not going to get me
+there.
+</p>
+
+<p>
+I do use some CDN tech with another of my Web sites, in a model
+where I push heavily-used static site furniture (thumbnails) in
+advance to the CDN for a non-static site, but that required significant
+coding effort and even breaking out the coporate credit card.  Too
+heavyweight for a quick feasibility test...
+</p>
+
+<p>
+I found out that <a href="https://www.cloudflare.com/">Cloudflare</a>
+offers a reverse-proxy model, that it can do this reverse proxying
+for existing non-secure sites, and that there is a free tier for
+piddling sites such as mine.  And Cloudflare creates and manages all
+the relevant certificates too.  Hurrah!
+</p>
+
+<p>
+The main effort was switching the DNS delegtion for the domain
+to Cloudflare and waiting for old records to time out, but
+while I was having fun I tidied up the HTML, shunk the (minor)
+site graphics with on and off-line tools (TinyPNG and OptiPNG),
+and turned on some extra Cloudflare optimisations suitable for
+my <em>very</em> static site (years between updates).
+</p>
+
+<p>
+I satisfied myself that everything worked as I wanted,
+and then stepped back to test things more systematically.
+</p>
+
+
+<h2>Blank Page HTTP/1.1 vs HTTP/2</h2>
+
+<p>
+A first really basic test is to create a zero-length HTML file
+and try to load it through the HTTP/1.1 and HTTPS + HTTP/2 URLs
+to compare speed, number of connections, etc.
+</p>
+
+<p>
+Cloudflare's "Cache Everything" option is was turned on, relevant to
+this test, so that the (empty) HTML page would be served directly from
+Cloudflare, without trying to go back to my server.  I also have long
+time timeouts (~1 month) in Cloudflare and all the Expires/Cache-Control
+headers, to ensure the first visit is fast (served from the CDN) and
+subsequent visits faster still since the brower should be able to retain
+everything in its cache.
+</p>
+
+<p>
+For the HTTP/1.1 time to first byte is typically 185ms, with
+DNS very similar to the non-CDN case of 60ms.  In this case a second,
+speculative, connection was opened by the browser, and in the end was
+used to attempt to fetch the site favicon.ico, but there isn't one,
+so this averaged 0.5 useful objects per TCP connection.
+</p>
+
+<p>
+Here is more detail on one sample primary connection:
+</p>
+<ul>
+<li>Request Start: 0.113 s</li>
+<li>DNS Lookup: 59 ms</li>
+<li>Initial Connection: 54 ms</li>
+<li>Time to First Byte: 75 ms</li>
+<li>Content Download: 0 ms</li>
+<li>Bytes In (downloaded): 0.5 KB</li>
+<li>Uncompressed Size: 20 B</li>
+<li>Bytes Out (uploaded): 0.4 KB</li>
+</ul>
+
+<p>
+The similar DNS time to my own site and DNS managed on my primaries
+and secondaries suggests that even Cloudflare's world-class DNS doesn't
+out-do my own in this simple case where clients are close by.
+</p>
+
+<p>
+For HTTP/2 (and https) the time to first byte is around 300ms,
+including similar DNS time to before.  Here is a little more detail:
+</p>
+<ul>
+<li>Request Start: 0.235 s</li>
+<li>DNS Lookup: 59 ms</li>
+<li>Initial Connection: 54 ms</li>
+<li>SSL Negotiation: 93 ms</li>
+<li>Time to First Byte: 70 ms</li>
+<li>Content Download: 0 ms</li>
+<li>Bytes In (downloaded): 0.3 KB</li>
+<li>Uncompressed Size: 20 B</li>
+<li>Certificates (downloaded): 3757 B</li>
+<li>Bytes Out (uploaded): 0.2 KB</li>
+</ul>
+
+<p>
+The extra https/TLS overhead (time and bytes) is noticeable in this
+rather extreme case.  At least HTTP/2 avoided opening up another
+connection.
+</p>
+
+
+<h3 id=StatusCake>StatusCake</h3>
+
+<p>
+Update 2017/07/28:
+c/o of the nice people at <a href="https://www.statuscake.com/">StatusCake</a>
+(thank you Dan and the dev team) I compared a zero-byte HTML page served:
+</p>
+<ul>
+<li>From the fossil site via Cloudflare over http: and HTTP/1.1: ~69ms.</li>
+<li>From the fossil site via Cloudflare over https: and SPDY: ~85ms.</li>
+<li>From the mobile version of this site over http: and HTTP/1.1: ~80ms.</li>
+</ul>
+
+<p>
+The StatusCake test servers used for this test  are in the UK, as is my server,
+and Cloudflare has UK POPs at least in London and Manchester.
+</p>
+
+<p>
+This is in line with the previous data that even a super-fast CDN and
+a transport newer than HTTP/1.1 doesn't compensate for the TLS overhead.
+</p>
+
+
+<h2>Ad-Free Page HTTP/1.1 vs HTTP/2</h2>
+
+<p>
+Next I constructed a slightly cut-down version of the real main page,
+still with the bulk of its HTML, all its images, but for example no ads.
+</p>
+
+<p>
+Note that in Cloudflare there is an option to auto-minify HTML (and
+CSS and JavaScript) which is effectively lossless compression.  I have
+enabled it, and it is relevant to this test.
+</p>
+
+<p>
+There is a little extra whitespace to help quickly manually edit this
+file when I update it (old school vi; no CMS here!).  Cloudflare is able
+to remove most of it automatically.
+</p>
+
+<p>
+Note that Cloudflare will also serve the content compressed with gzip if
+the browser will accept that encoding, which along with the minifying
+results in minimising the number of bytes sent over the network to
+achieve the desired displayed Web page.
+</p>
+
+<p>
+Cloudflare does not seem to support Brotli compression (br)
+even on HTML even when covered by "Cache Everything".
+</p>
+
+<p>
+The images had already been manually roughly halved in size earlier.
+</p>
+
+<p>
+A typical (unencrypted) HTTP/1.1 view gets lots of A scores, start
+render in 284ms and visually complete in 400ms, with a total transfer
+size of 13kB.  All 4 objects (and the attempt to fetch the non-existant
+favicon.ico) were fetched over two TCP connections.
+</p>
+
+<!--DESK--><div class="fullwcdisp" style="font-size:smaller">
+<!--DESK--><table class="tb1" style="margin-left:auto;margin-right:auto">
+<!--DESK--><tr>
+<!--DESK--><th colspan="8" style="text-align:center;vertical-align:middle"></th>
+<!--DESK--><th colspan="3" style="text-align:center;vertical-align:middle">Document Complete</th>
+<!--DESK--><th colspan="2" style="text-align:center;vertical-align:middle">Fully Loaded</th>
+<!--DESK--></tr>
+<!--DESK--><tr><th style="text-align:center;vertical-align:middle"></th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Load Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">First Byte</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Start Render</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Visually Complete</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Speed Index</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Interactive (beta)</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Requests</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Bytes In</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Requests</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Bytes In</th>
+<!--DESK--><tr>
+<!--DESK--><td style="vertical-align:middle">First View</td>
+<!--DESK--><td style="vertical-align:middle">0.388s</td>
+<!--DESK--><td style="vertical-align:middle">0.198s</td>
+<!--DESK--><td style="vertical-align:middle">0.284s</td>
+<!--DESK--><td style="vertical-align:middle">0.400s</td>
+<!--DESK--><td style="vertical-align:middle">378</td>
+<!--DESK--><td style="vertical-align:middle">&GT; 3.447s</td>
+<!--DESK--><td style="vertical-align:middle">0.388s</td>
+<!--DESK--><td style="vertical-align:middle">4</td>
+<!--DESK--><td style="vertical-align:middle">13 KB</td>
+<!--DESK--><td style="vertical-align:middle">0.489s</td>
+<!--DESK--><td style="vertical-align:middle">5</td>
+<!--DESK--><td style="vertical-align:middle">13 KB</td>
+<!--DESK--></tr>
+<!--DESK--></table>
+<!--DESK--></div>
+
+<p>
+The primary HTML page download looked like:
+</p>
+<ul>
+<li>Request Start: 0.112 s</li>
+<li>DNS Lookup: 58 ms</li>
+<li>Initial Connection: 54 ms</li>
+<li>Time to First Byte: 86 ms</li>
+<li>Content Download: 14 ms</li>
+<li>Bytes In (downloaded): 3.8 KB</li>
+<li>Uncompressed Size: 9.5 KB</li>
+<li>Bytes Out (uploaded): 0.4 KB</li>
+</ul>
+
+<p>
+A typical https HTTP/2 view yielded a start render of 590ms with
+visual completion 10ms later and a lotal of 24kB of HTML, images and
+certificates.  All 4 objects (and the attempt to fetch the non-existant
+favicon.ico) were fetched on one TCP connection.
+</p>
+
+<!--DESK--><div class="fullwcdisp" style="font-size:smaller">
+<!--DESK--><table class="tb1" style="margin-left:auto;margin-right:auto">
+<!--DESK--><tr>
+<!--DESK--><th colspan="8" style="text-align:center;vertical-align:middle"></th>
+<!--DESK--><th colspan="3" style="text-align:center;vertical-align:middle">Document Complete</th>
+<!--DESK--><th colspan="3" style="text-align:center;vertical-align:middle">Fully Loaded</th>
+<!--DESK--></tr>
+<!--DESK--><tr><th style="text-align:center;vertical-align:middle"></th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Load Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">First Byte</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Start Render</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Visually Complete</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Speed Index</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Interactive (beta)</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Requests</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Bytes In</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Time</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Requests</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Bytes In</th>
+<!--DESK--><th style="text-align:center;vertical-align:middle">Certificates</th>
+<!--DESK--><tr>
+<!--DESK--><td style="vertical-align:middle">First View</td>
+<!--DESK--><td style="vertical-align:middle">0.490s</td>
+<!--DESK--><td style="vertical-align:middle">0.314s</td>
+<!--DESK--><td style="vertical-align:middle">0.590s</td>
+<!--DESK--><td style="vertical-align:middle">0.600s</td>
+<!--DESK--><td style="vertical-align:middle">600</td>
+<!--DESK--><td style="vertical-align:middle">&GT; 2.945s</td>
+<!--DESK--><td style="vertical-align:middle">0.490s</td>
+<!--DESK--><td style="vertical-align:middle">4</td>
+<!--DESK--><td style="vertical-align:middle">20 KB</td>
+<!--DESK--><td style="vertical-align:middle">0.562s</td>
+<!--DESK--><td style="vertical-align:middle">5</td>
+<!--DESK--><td style="vertical-align:middle">20 KB</td>
+<!--DESK--><td style="vertical-align:middle">4 KB</td>
+<!--DESK--></tr>
+<!--DESK--></table>
+<!--DESK--></div>
+
+<p>
+The first/main HTML transfer looked like (including ~94ms of TLS setup):
+</p>
+<ul>
+<li>Request Start: 0.236 s</li>
+<li>Initial Connection: 54 ms</li>
+<li>Time to First Byte: 78 ms</li>
+<li>Content Download: 13 ms</li>
+<li>Bytes In (downloaded): 3.5 KB</li>
+<li>Uncompressed Size: 9.5 KB</li>
+<li>Certificates (downloaded): 3,757 B</li>
+<li>Bytes Out (uploaded): 0.2 KB</li>
+</ul>
+
+<p>
+So with this simple page HTTP/2 saved one TCP connection but
+<strong>nearly doubled data transfered and time to display</strong>
+compared the the HTTP/1.1 version from the same world-class CDN server,
+and indeed from my own RPi!  All the render times were entirely
+acceptable, but the https overhead is clear.
+</p>
+
+
+<h2>Fully Loaded Page HTTP/1.1 vs HTTP/2</h2>
+
+<p>
+This page has 3 AdSense 'responsive' ads on it.
+</p>
+
+<p>
+For HTTP/1.1 the page content is visible in ~500ms and the page
+including ads is visually complete in 3.1s, with a speed index of 1716
+and a total page weight including certificates of ~340kB.
+9 TCP connections were used.
+</p>
+
+<p>
+For HTTP/2 the page content is visible in ~600ms and the page
+including ads is visually complete in 3.0s, with a speed index of 2115+
+and a total page weight including certificates of ~385kB+.
+6 TCP connections were used.
+</p>
+
+<p>
+So HTTP/2 still performs slightly worse than HTTP/1.1 from a user perspective,
+and though it saves some TCP connections HTTP/2 uses more data.
+Putting AdSense on the page largely swamps everything else.
+</p>
+
+<p>
+It is probably reasonable to assume that Cloudflare's HTTP servers are
+well tuned; thus at the moment all I see is a minor detriment to the
+user experience and possibly to their and my carbon footprint from extra
+traffic from switching to HTTP/2.
+</p>
+
+<p>
+Effectively compulsory use of TLS/https with HTTP/2 prevents <em>helpful</em>
+intermediaries from cacheing, transcoding, etc, which has scalability
+concerns for places further from the Web servers and with poor bandwidth,
+such as mobile use and the developing world.  And the extra RTTs and
+opportunity for breakage on mobile hurt TLS/https even more.
+</p>
+
+<p>
+A big advantage of a CDN, when using HTTP/2 and thus https,
+is that the time for any extra round-trips during handshaking
+is reduced, thus reducing latency and improving user experience,
+especially for the the first page fetched.
+</p>
+
+<h2>Playtime</h2>
+
+<p>
+2017/05/16:
+as a side-side-project I've tried pushing some of the static content
+from this (Earth Notes) site into the Cloudflare hosted site to see
+what benefits may accrue from a more subtle blend of hosting locally
+and quietly moving some stuff to the cloud.
+</p>
+
+<p>
+In particular (and this isn't probably isn't a good idea for SEO purposes,
+I've mirrored my static images directory within the Cloudflare site.
+I've set those items up to have a long expiry, and with Cache-Control
+marked 'public' and '<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">immutable</a>',
+and redirected key items needed during page loading to the Cloudflare site.
+</p>
+
+<p>
+(A normal page reload is able to avoid reloading at least one 'immutable'
+item with Firefox.)
+</p>
+
+<p>
+Typically the front page first load from a clean cache
+(via http:// in either desktop or mobile versions)
+takes three connections, one of which is an HTTP/2 (over TLS)
+connection to Cloudflare which scoops up several immutable items.
+</p>
+
+<p>
+Note that because of the nature of the site, most page views are the
+first and only page view of the site for a given user.  Thus it makes
+sense to concentrate on optimising that first view with an empty cache
+(ie minimising latency), even at some cost in cacheing for nominal
+subsequent page views.  So, for example, inlining small amounts of core
+CSS is a win definitely for HTTP/1.1, and even quite likely for HTTP/2.
+</p>
+
+<p>
+Pages are typically rendered in just over a second even over simulated 3G.
+</p>
+
+<p>
+The trial policy is to explicitly link only to the mirrored versions
+of the static items from <code>img</code> tags for example,
+that happen implicitly as part of (and that could delay) page loading,
+but to leave any explicit click-through links pointing to 'normal'
+canonical earth.org.uk addresses.  I can simply check in the logs
+for actual likely best wins in terms of hits on files under /img/
+hit from pages on site.
+</p>
+
+<!--  egrep '^www.earth.*"GET /img/.* "http://((m)|(www)).earth.*.html' LOG | egrep -v ' LOCALIP' | awk '{print $8}' | sort | uniq -c | sort -n  -->
+
+<p>
+Cloudflare has enough distinct edge servers (&gt;100 at 2017/05) that
+it could take a long time to populate all of them for global traffic
+individually without using their tiered/hierarchical 'Argo' service
+for example.  So my site will continue to see hits, and end users see
+slow cache misses.  It may indeed be hard to keep the less-frequent
+geographies' edge caches live at all, and at ~2017/05/22 I can see this
+whenever a user from a 'new' country pops up.  Thus the Cloudflare hit
+rate is typically somewhere in the range 50--70% overall.
+</p>
+
+<p>
+2017/05/26:
+I have managed to tweak things such that for the desktop front page
+all objects are delivered in parallel down two connections for a new visitor:
+4 down the initial HTTP/1.1 connection from index.html to favicon.ico,
+and 5 via Cloudflare over HTTP/2, with first render in 655ms (speed index 750)
+and complete in ~1.5s with a total weight (including certs) of 51kB.
+(For mobile an extra connection is used even though only 5 objects transferred.)
+</p>
+
+<p>
+2017/05/31:
+with more tweaking, including better handling of JavaScript and the
+extra CSS used on the home page, mobile (m) and desktop (www) home pages
+are essentially visually complete in 0.5s and ~1s respectively, with 5
+objects, 2 connections and 17kB for mobile cf 8 objects, 3 connections
+and 46kB for desktop.
+</p>
+
+<p>
+2017/06/17:
+a few days ago I switched back to serving all static content directly
+from the RPi (from the 'main'/www URL), not via the CDN.  I haven't
+turned off the aliases via the CDN, and some spider requests are still
+coming though, but that's not a problem.
+</p>
+
+
+<h2>Carbon</h2>
+
+<p>
+Given some estimates (see Sources) for sending 11g--19g per 1MB of
+data across the Internet (in one case across 3G, in another for email)
+we might reasonably start from an estimate of 10g/1MB, so maybe ~0.1g
+to visit the ad-free page over HTTP/1.1, ~0.2g over HTTP/2 with https,
+rising to ~3.4g with ads, and to ~3.9g with ads and over HTTP/2 with https.
+This does not account for distance (byte miles?) for traffic,
+nor many other factors.
+</p>
+
+<p>
+Also to be accounted for are any differences in serving from efficient CDN
+servers (assumed more efficient than my RPi, even if it is running off-grid)
+closer to the end user (reduced byte miles), and less obvious effects such
+as any extra costs of (eg) handling uncached traffic such as 404s from
+robots.txt and malicious probe request 404s now taking a longer route.
+</p>
+
+<p>
+Note also that objects from very lightly-used sites may be continually
+be evicted from CDN caches, thus requiring extra work to refetch them
+every time (or nearly so) that they are requested, possibly doubling
+traffic and CPU effort to deliver to the end user.
+Though it is also possible that some indirect uncached routes via a CDN
+<a href="https://blog.cloudflare.com/argo/">are faster and more efficient</a>
+than directly.
+</p>
+
+<p>
+<strong>IN PROGRESS</strong>
+</p>
+
+
+<footer id="sources" class="info">
+<h2>Sources/Links</h2>
+<ul>
+<li><a href="http://www.ispreview.co.uk/index.php/2012/05/carbon-footprint-for-1mb-of-mobile-broadband-data-on-o2-uk-is-11g-co2e.html">Carbon Footprint for 1MB of Mobile Broadband Data on O2 UK is 11g CO2e</a> (2012, over 3G).</li>
+<li><a href="http://www.emag.suez-environnement.com/en/the-environmental-impact-of-our-digital-practices-14108">Sending a 1MB email to a single recipient is the equivalent of emitting 19g of CO2</a> according to a 2014 study by the French Environment and Energy Management Agency (ADEME).</li>
+<li><a href="https://peerj.com/preprints/2027.pdf">Web Servers Energy Efficiency Under HTTP/2: Varun Sapra and Abram Hindle [PDF]</a>: "We conclude that even with huge TLS associated cost with HTTP/2, on high latency networks it can help servers to be more energy efficient while improving their performance as well."</li>
+<li><a href="http://link.springer.com/chapter/10.1007/978-3-642-32606-6_6">Evaluating Energy Consumption in CDN Servers</a>: "Energy management in large scale distributed systems has an important role to minimize the contribution of Information and Communication Technology (ICT) industry in global CO2 footprint and to decrease the energy cost. Content Distribution Networks (CDNs) are one of the popular large scale distributed systems, in which the client requests are forwarded towards servers and are fulfilled either by surrogate servers or by the origin server, depending upon the contents availability and the CDN redirection policy. In this paper we explore the energy consumption in CDNs using different client redirection policies. ..."</li>
+<li><a href="https://crd.lbl.gov/assets/pubs_presos/ACS/cloud_efficiency_study.pdf">The Energy Efficiency Potential of Cloud-Based Software: A U.S. Case Study [PDF] (2013)</a>: "The primary advantage of cloud data centers is that they leverage virtualization and scalable computing strategies to maximize the utilization of servers, which drastically reduces the number of servers needed to provide digital services when compared to traditional local data centers.  Cloud data centers are also typically engineered to minimize the energy needed for infrastructure systems (i.e., cooling and power provision systems), with many cloud data centers exhibiting power utilization effectiveness (PUE) values of 1.1 or less."</li>
+<li><a href="https://http2.github.io/">HTTP/2</a> home page.</li>
+<li><a href="https://greenspector.com/en/articles/2017-03-07-http2-latency-and-energy/">HTTP2, Latency and Energy</a>: "HTTP2 can improve the client-side power efficiency of a website.  [~8%]  ... As HTTP2 groups the requests, the server is loaded during a shorter period: hence server resources are released earlier and ready for other users."</li>
+<li><a href="https://www.keycdn.com/blog/https-performance-overhead/">Analyzing HTTPS Performance Overhead</a> (2017) suggests CPU overhead of TLS ~2%, latency overhead 2xRTT + 5ms.</li>
+<li><a href="https://insouciant.org/tech/http-slash-2-considerations-and-tradeoffs/">HTTP/2 Considerations and Tradeoffs</a>.</li>
+<li>2016? <a href="https://www.akamai.com/kr/ko/multimedia/documents/technical-publication/http2-performance-in-cellular-networks.pdf">Poster: HTTP/2 Performance in Cellular Networks [PDF]</a>: "Results from our investigation of h2 performance are threefold. First, for a webpage with several hundreds of small sized objects, h2 outperforms h1, except in the scenarios when cellular networks frequently experience high loss rates. Second, for a webpage with large objects, h2 PLTs [Page Load Times] are significantly higher than h1. And third, for a webpage with a relatively large number of both small and medium sized objects, h2 outperforms h1; however as the connection starts experiencing loss, the performance gain in h2 degrades, resulting in PLTs slower than h1." ~32% of the observed cellular/mobile connections to an Akamai data centre experienced loss, for connections of mean 15kB/2.3s and 26 segments.</li>
+<li>2017/10/26: <a href="https://www.nginx.com/blog/7-tips-for-faster-http2-performance/#tip1today">7 Tips for Faster HTTP/2 Performance</a>: "Performance ... results fall into three groups depending on the connection’s typical round‑trip time (RTT): Very low RTTs (0–20 ms) – There is virtually no difference between HTTP/1.x, HTTP/2, and HTTPS. Typical Internet RTTs (30–250 ms) – HTTP/2 is faster than HTTP/1.x, and both are faster than HTTPS. For US cities near one another, RTT is about 30 ms, and it’s about 70 ms from coast to coast (about 3000 miles). On the shortest route between Tokyo and London, RTT is about 240 ms. High RTTs (300 ms and up) – HTTP/1.x is faster than HTTP/2, which is faster than HTTPS."</li>
+<li><a href="https://alistapart.com/article/using-http-2-responsibly-adapting-for-users">If your site’s footprint is very small, HTTP requests are few, and upgrading to SSL isn’t pragmatic, you may already be well-served by HTTP/1</a>.</li>
+<li><a href="http://ieeexplore.ieee.org/document/7476672/"> ... for networks with higher RTTs, HTTP/2 has better energy consumption performance than HTTP/1.1</a>.</li>
+<li><a href="https://nickcraver.com/blog/2017/05/22/https-on-stack-overflow/">HTTPS on Stack Overflow: The End of a Long Road</a>: "We’re obsessed with performance (maybe a little too much)."</li>
+<li><a href="http://www.webpagetest.org/">WebPagetest</a> for site performance testing.</li>
+<li>CSS minification at <a href="https://cssminifier.com/minify">cssminifier.com</a>.</li>
+<li>Image compression <a href="https://tinypng.com/">online with TinyPNG</a> or off-line with <a href="http://optipng.sourceforge.net/">OptiPNG</a>.</li>
+<li><a href="https://tobias.is/blogging/even-faster-images-using-http2-and-progressive-jpegs/">Even Faster Images using HTTP2 and Progressive JPEGs</a>: "Progressive images render faster on HTTP2, thus increasing perceived performance. Take control of progressive JPEG’s scan layers to show meaningful image content with only 25% of image data sent."</li>
+<li><a href="https://www.cloudflare.com/website-optimization/http2/">Cloudflare HTTP/2</a>.</li>
+<li><a href="http://blog.cloudflare.com/top-tips-for-new-cloudflare-users/">Top Tips for new CloudFlare Users</a>: Cloudflare is a reverse proxy.</li>
+<li>2017/05/18: <a href="https://blog.cloudflare.com/argo/">Introducing Argo — A faster, more reliable, more secure Internet for everyone</a>: "Cloudflare now sees about 10% of all HTTP/HTTPS requests on the Internet." and a <a href="https://www.rootusers.com/cloudflare-argo-benchmark/">Cloudflare Argo Benchmark and Speed Test</a>.</li>
+<li>The <a href="http://www.exnet.com/Style_Guide.html">ExNet style guide</a> which has adjusted gently since the mid '90s, and always aims to make pages work on restricted devices and slow connections, as well as full-featured desktop browsers.</li>
+<li>Google's <a href="https://developers.google.com/speed/docs/insights/mobile">Mobile Analysis in PageSpeed Insights</a> suggests that above-the-fold (ATF) content should render in no more than 1s, which given ~200ms RTTs over common 3G mobile networks, allows 200ms for each of DNS, TCP handshake, HTTP handshake (not including TLS for HTTPS with or without HTTP/2), server and client rendering.</li>
+<li><a href="https://arxiv.org/abs/1704.01220">Perceived Performance of Webpages In the Wild: Insights from Large-scale Crowdsourcing of Above-the-Fold QoE</a>: "... commonly used navigation metrics such as "onLoad" and "Time To First Byte (TTFB)" fail (less than 60% match) to represent majority human perception..." (see GitHub <a href="https://github.com/pahammad/speedperception">SpeedPerception</a>).  (Though TTFB seems marginally better than SpeedIndex!)</li>
+<li><a href="https://www.smashingmagazine.com/2016/02/preload-what-is-it-good-for/">Preload: What Is It Good For?</a>.</li>
+<li><a href="https://builtvisible.com/responsive-images-for-busy-people-a-quick-primer/">Responsive Images for Busy People: Srcset &amp; Sizes</a>, ie automatically loading smaller images for (much) smaller devices.</li>
+</ul>
+</footer>
