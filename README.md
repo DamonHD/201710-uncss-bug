@@ -1,4 +1,4 @@
-Test case for putative uncss 0.15.0 bug.
+Test case for putative uncss 0.15.0 bug/enhahcement.
 
 "With -n avoid injecting blank lines (and unnecessary newlines)"
 
@@ -25,3 +25,5 @@ Note that two of the .css files happen to contain a trailing \n currently
 (img/css/table-20170622.css and img/css/fullw-20170606.css)
 but even for the two that do not, uncss is inserting an extra \n itself
 where it need not, and it could strip the trailing \n (ie whitespace) safely.
+
+Update: http://www.earth.org.uk/note-on-site-technicals-5.html#css
